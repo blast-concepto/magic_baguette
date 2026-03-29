@@ -922,9 +922,12 @@ body {
   border: 1px solid #6ee7b7;
 }
 .reto-completed-icon {
-  font-size: 48px;
-  margin-bottom: 8px;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 8px;
+  color: #f59e0b;
 }
+.reto-completed-icon svg { width: 56px; height: 56px; }
 .reto-completed-text {
   font-size: 18px;
   font-weight: 700;
@@ -1074,7 +1077,6 @@ body {
   background: linear-gradient(135deg, rgba(16,185,129,0.03) 0%, rgba(52,211,153,0.06) 100%);
 }
 .module-icon {
-  font-size: 26px;
   width: 50px;
   height: 50px;
   display: flex;
@@ -1083,7 +1085,9 @@ body {
   border-radius: 14px;
   background: var(--gradient-soft);
   flex-shrink: 0;
+  color: var(--primary);
 }
+.module-icon svg { width: 24px; height: 24px; }
 .module-info { flex: 1; }
 .module-title {
   font-size: 15px;
@@ -1095,7 +1099,15 @@ body {
   color: var(--text-light);
   margin-top: 2px;
 }
-.module-status { font-size: 20px; }
+.module-status {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--text-light);
+}
+.module-status svg { width: 22px; height: 22px; }
+.module-card.done .module-status { color: var(--success); }
+.app-desc-icon svg { width: 18px; height: 18px; color: var(--primary); }
 
 /* Page title */
 .page-title {

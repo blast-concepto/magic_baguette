@@ -77,46 +77,62 @@ export default function Home({ activeUser, onSwitchUser }: Props) {
       )}
 
       <Link to="/vocabulary" className={`module-card ${todayProgress?.vocabQuizDone ? 'done' : ''}`}>
-        <div className="module-icon">&#x1F4D6;</div>
+        <div className="module-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
         <div className="module-info">
           <div className="module-title">Quiz de vocabulario</div>
           <div className="module-desc">Pon a prueba tus conocimientos</div>
         </div>
         <div className="module-status">
-          {todayProgress?.vocabQuizDone ? '\u2705' : '\u27A1\uFE0F'}
+          {todayProgress?.vocabQuizDone
+            ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>}
         </div>
       </Link>
 
       <Link to="/conjugation" className={`module-card ${todayProgress?.conjugationDone ? 'done' : ''}`}>
-        <div className="module-icon">&#x270D;&#xFE0F;</div>
+        <div className="module-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+        </div>
         <div className="module-info">
           <div className="module-title">Conjugacion</div>
           <div className="module-desc">Practica las conjugaciones verbales</div>
         </div>
         <div className="module-status">
-          {todayProgress?.conjugationDone ? '\u2705' : '\u27A1\uFE0F'}
+          {todayProgress?.conjugationDone
+            ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>}
         </div>
       </Link>
 
       <Link to="/challenge" className={`module-card ${todayProgress?.challengeDone ? 'done' : ''}`}>
-        <div className="module-icon">&#x1F3AF;</div>
+        <div className="module-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
         <div className="module-info">
           <div className="module-title">Reto del dia</div>
           <div className="module-desc">Tu mision en frances para hoy</div>
         </div>
         <div className="module-status">
-          {todayProgress?.challengeDone ? '\u2705' : '\u27A1\uFE0F'}
+          {todayProgress?.challengeDone
+            ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>}
         </div>
       </Link>
 
       <Link to="/dialogues" className={`module-card ${todayProgress?.dialogueDone ? 'done' : ''}`}>
-        <div className="module-icon">&#x1F4AC;</div>
+        <div className="module-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
         <div className="module-info">
           <div className="module-title">Diálogo del día</div>
           <div className="module-desc">Practica conversaciones reales</div>
         </div>
         <div className="module-status">
-          {todayProgress?.dialogueDone ? '\u2705' : '\u27A1\uFE0F'}
+          {todayProgress?.dialogueDone
+            ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>}
         </div>
       </Link>
     </div>

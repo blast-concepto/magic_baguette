@@ -9,36 +9,42 @@ interface Props {
 
 function BaguetteLogo() {
   return (
-    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="40" cy="40" r="36" fill="url(#bgGrad)" opacity="0.12"/>
-      <rect x="10" y="32" width="60" height="18" rx="9" transform="rotate(-22 40 41)" fill="url(#baguetteGrad)"/>
-      <g transform="rotate(-22 40 41)" stroke="rgba(255,220,120,0.55)" strokeWidth="1.8" strokeLinecap="round">
-        <line x1="24" y1="32" x2="21" y2="41"/>
-        <line x1="34" y1="32" x2="31" y2="41"/>
-        <line x1="44" y1="32" x2="41" y2="41"/>
-        <line x1="54" y1="32" x2="51" y2="41"/>
-      </g>
-      <g transform="translate(60,14)">
-        <line x1="0" y1="-5" x2="0" y2="5" stroke="#6366f1" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="-5" y1="0" x2="5" y2="0" stroke="#6366f1" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="-3.5" y1="-3.5" x2="3.5" y2="3.5" stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-        <line x1="3.5" y1="-3.5" x2="-3.5" y2="3.5" stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-      </g>
-      <g transform="translate(16,62)">
-        <line x1="0" y1="-4" x2="0" y2="4" stroke="#ec4899" strokeWidth="1.8" strokeLinecap="round"/>
-        <line x1="-4" y1="0" x2="4" y2="0" stroke="#ec4899" strokeWidth="1.8" strokeLinecap="round"/>
-      </g>
+    <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="bgGrad" x1="0" y1="0" x2="80" y2="80">
-          <stop stopColor="#6366f1"/>
-          <stop offset="1" stopColor="#ec4899"/>
+        <linearGradient id="logoGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.12"/>
+          <stop offset="100%" stopColor="#ec4899" stopOpacity="0.12"/>
         </linearGradient>
-        <linearGradient id="baguetteGrad" x1="10" y1="32" x2="70" y2="50" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#f97316"/>
-          <stop offset="0.5" stopColor="#fbbf24"/>
-          <stop offset="1" stopColor="#d97706"/>
+        <linearGradient id="baguette" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#c2410c"/>
+          <stop offset="30%" stopColor="#f97316"/>
+          <stop offset="60%" stopColor="#fbbf24"/>
+          <stop offset="100%" stopColor="#d97706"/>
         </linearGradient>
       </defs>
+      {/* Background circle */}
+      <circle cx="44" cy="44" r="40" fill="url(#logoGlow)"/>
+      {/* Baguette */}
+      <g transform="rotate(-22, 44, 44)">
+        <rect x="14" y="38" width="60" height="14" rx="7" fill="url(#baguette)"/>
+        {/* Score marks */}
+        <line x1="28" y1="38" x2="26" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="38" y1="38" x2="36" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="48" y1="38" x2="46" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="58" y1="38" x2="56" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
+      </g>
+      {/* Sparkle top-right */}
+      <g transform="translate(68, 16)" stroke="#6366f1" strokeLinecap="round">
+        <line x1="0" y1="-6" x2="0" y2="6" strokeWidth="2.5"/>
+        <line x1="-6" y1="0" x2="6" y2="0" strokeWidth="2.5"/>
+        <line x1="-4" y1="-4" x2="4" y2="4" strokeWidth="1.5" opacity="0.4"/>
+        <line x1="4" y1="-4" x2="-4" y2="4" strokeWidth="1.5" opacity="0.4"/>
+      </g>
+      {/* Small sparkle bottom-left */}
+      <g transform="translate(18, 68)" stroke="#ec4899" strokeLinecap="round">
+        <line x1="0" y1="-4" x2="0" y2="4" strokeWidth="2"/>
+        <line x1="-4" y1="0" x2="4" y2="0" strokeWidth="2"/>
+      </g>
     </svg>
   );
 }
@@ -79,10 +85,22 @@ export default function UserSelect({ onSelect }: Props) {
       </div>
 
       <div className="app-description">
-        <div className="app-desc-row"><span className="app-desc-icon">📖</span><span>Vocabulario con pronunciación y ejemplos</span></div>
-        <div className="app-desc-row"><span className="app-desc-icon">✍️</span><span>Conjugaciones con frases en contexto</span></div>
-        <div className="app-desc-row"><span className="app-desc-icon">🎯</span><span>Un reto real cada día</span></div>
-        <div className="app-desc-row"><span className="app-desc-icon">💬</span><span>Diálogos para practicar conversación</span></div>
+        <div className="app-desc-row">
+          <span className="app-desc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span>
+          <span>Vocabulario con pronunciación y ejemplos</span>
+        </div>
+        <div className="app-desc-row">
+          <span className="app-desc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span>
+          <span>Conjugaciones con frases en contexto</span>
+        </div>
+        <div className="app-desc-row">
+          <span className="app-desc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+          <span>Un reto real cada día</span>
+        </div>
+        <div className="app-desc-row">
+          <span className="app-desc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+          <span>Diálogos para practicar conversación</span>
+        </div>
       </div>
 
       <p className="user-select-sub">Elige tu perfil para continuar</p>
