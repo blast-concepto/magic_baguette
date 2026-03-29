@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getActiveUserId, getProgressKey } from './useUsers';
 
 export interface DayProgress {
   date: string;
@@ -19,7 +20,10 @@ export interface Progress {
   lastActiveDate: string;
 }
 
-const STORAGE_KEY = 'french-daily-progress';
+function getStorageKey(): string {
+  const uid = getActiveUserId();
+  return uid ? getProgressKey(uid) : 'french-daily-progress';
+}
 
 const defaultProgress: Progress = {
   currentStreak: 0,
@@ -38,8 +42,10 @@ function getToday(): string {
 }
 
 export function useProgress() {
+  const storageKey = getStorageKey();
+
   const [progress, setProgress] = useState<Progress>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -51,8 +57,8 @@ export function useProgress() {
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
+    localStorage.setItem(storageKey, JSON.stringify(progress));
+  }, [progress, storageKey]);
 
   const today = getToday();
 

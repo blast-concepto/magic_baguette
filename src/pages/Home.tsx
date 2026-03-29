@@ -2,8 +2,14 @@ import { Link } from 'react-router-dom';
 import { useProgress } from '../hooks/useProgress';
 import { vocabulary } from '../data/vocabulary';
 import SpeakButton from '../components/SpeakButton';
+import type { User } from '../hooks/useUsers';
 
-export default function Home() {
+interface Props {
+  activeUser: User;
+  onSwitchUser: () => void;
+}
+
+export default function Home({ activeUser, onSwitchUser }: Props) {
   const { progress, getTodayProgress, getWordOfTheDay } = useProgress();
   const todayProgress = getTodayProgress();
   const wordIndex = getWordOfTheDay(vocabulary.length);
@@ -12,7 +18,11 @@ export default function Home() {
   return (
     <div className="fade-in">
       <div className="header">
-        <div className="flag">&#x1F1EB;&#x1F1F7;</div>
+        <div className="user-pill" onClick={onSwitchUser}>
+          <span className="user-pill-emoji">{activeUser.emoji}</span>
+          <span className="user-pill-name">{activeUser.name}</span>
+          <span className="user-pill-switch">cambiar</span>
+        </div>
         <h1>Bonjour !</h1>
         <p>Tu practica diaria de frances</p>
       </div>

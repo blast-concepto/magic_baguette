@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
 import Home from './pages/Home';
 import Vocabulary from './pages/Vocabulary';
@@ -5,14 +6,36 @@ import Conjugation from './pages/Conjugation';
 import Challenge from './pages/Challenge';
 import Dialogues from './pages/Dialogues';
 import ProgressPage from './pages/Progress';
+import UserSelect from './pages/UserSelect';
+import { getActiveUserId, getUsers, setActiveUserId } from './hooks/useUsers';
+import type { User } from './hooks/useUsers';
 import './index.css';
 
 function App() {
+  const [activeUser, setActiveUser] = useState<User | null>(() => {
+    const id = getActiveUserId();
+    if (!id) return null;
+    return getUsers().find(u => u.id === id) ?? null;
+  });
+
+  const handleSelectUser = (user: User) => {
+    setActiveUser(user);
+  };
+
+  const handleSwitchUser = () => {
+    setActiveUserId(null);
+    setActiveUser(null);
+  };
+
+  if (!activeUser) {
+    return <UserSelect onSelect={handleSelectUser} />;
+  }
+
   return (
     <HashRouter>
       <div className="app">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home activeUser={activeUser} onSwitchUser={handleSwitchUser} />} />
           <Route path="/vocabulary" element={<Vocabulary />} />
           <Route path="/conjugation" element={<Conjugation />} />
           <Route path="/challenge" element={<Challenge />} />
