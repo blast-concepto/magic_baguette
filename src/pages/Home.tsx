@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useProgress } from '../hooks/useProgress';
 import { vocabulary } from '../data/vocabulary';
 import SpeakButton from '../components/SpeakButton';
+import Avatar from '../components/Avatar';
 import type { User } from '../hooks/useUsers';
 
 interface Props {
@@ -19,7 +20,7 @@ export default function Home({ activeUser, onSwitchUser }: Props) {
     <div className="fade-in">
       <div className="header">
         <div className="user-pill" onClick={onSwitchUser}>
-          <span className="user-pill-emoji">{activeUser.emoji}</span>
+          <Avatar name={activeUser.name} size={28} fontSize={12} radius="50%" />
           <span className="user-pill-name">{activeUser.name}</span>
           <span className="user-pill-switch">cambiar</span>
         </div>
