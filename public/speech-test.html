@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head><title>Speech API Debug</title></head>
+<body>
+<h2>Speech API Diagnostic</h2>
+<pre id="log" style="max-height:400px;overflow:auto;background:#f1f5f9;padding:12px;font-size:13px"></pre>
+<div id="buttons" style="margin-top:12px"></div>
+<script>
+const log = document.getElementById('log');
+const btns = document.getElementById('buttons');
+function print(msg) { log.textContent += msg + '\n'; }
+
+function tryVoice(voice, label) {
+  print('--- Trying: ' + label + ' ---');
+  speechSynthesis.cancel();
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance('Bonjour, comment allez-vous?');
+    u.lang = 'fr-FR';
+    u.rate = 0.9;
+    u.volume = 1;
+    if (voice) u.voice = voice;
+    window._lastUtterance = u; // prevent garbage collection
+    u.onstart = () => print(label + ': onstart');
+    u.onend = () => print(label + ': onend');
+    u.onerror = (e) => print(label + ': onerror — ' + e.error);
+    u.onboundary = () => print(label + ': onboundary (audio producing!)');
+    speechSynthesis.speak(u);
+  }, 100);
+}
+
+function setup() {
+  const voices = speechSynthesis.getVoices();
+  const frVoices = voices.filter(v => v.lang.startsWith('fr'));
+  print('Total voices: ' + voices.length);
+  print('French voices: ' + frVoices.length);
+  frVoices.forEach(v => print('  ' + v.name + ' (' + v.lang + ') local=' + v.localService));
+  print('');
+
+  btns.innerHTML = '';
+
+  // Button: no voice, just lang
+  const b0 = document.createElement('button');
+  b0.textContent = 'Test: lang only (no voice)';
+  b0.style.cssText = 'font-size:16px;padding:8px 16px;margin:4px';
+  b0.onclick = () => tryVoice(null, 'lang-only');
+  btns.appendChild(b0);
+
+  // One button per French voice
+  frVoices.forEach(v => {
+    const b = document.createElement('button');
+    b.textContent = 'Test: ' + v.name + (v.localService ? ' (local)' : ' (network)');
+    b.style.cssText = 'font-size:16px;padding:8px 16px;margin:4px';
+    b.onclick = () => tryVoice(v, v.name);
+    btns.appendChild(b);
+  });
+}
+
+if (speechSynthesis.getVoices().length > 0) {
+  setup();
+} else {
+  speechSynthesis.addEventListener('voiceschanged', setup);
+}
+</script>
+</body>
+</html>
