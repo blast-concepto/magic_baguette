@@ -7,7 +7,12 @@ import SpeakButton from '../components/SpeakButton';
 type TenseName = typeof tenseNames[number];
 
 function normalize(s: string): string {
-  return s.trim().toLowerCase().replace(/\s+/g, ' ');
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // strip diacritics
+    .replace(/\s+/g, ' ');
 }
 
 export default function Conjugation() {

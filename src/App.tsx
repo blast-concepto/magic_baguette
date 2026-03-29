@@ -6,6 +6,7 @@ import Conjugation from './pages/Conjugation';
 import Challenge from './pages/Challenge';
 import Dialogues from './pages/Dialogues';
 import ProgressPage from './pages/Progress';
+import Exercise from './pages/Exercise';
 import UserSelect from './pages/UserSelect';
 import { getActiveUserId, getUsers, setActiveUserId } from './hooks/useUsers';
 import type { User } from './hooks/useUsers';
@@ -41,6 +42,7 @@ function App() {
           <Route path="/challenge" element={<Challenge />} />
           <Route path="/dialogues" element={<Dialogues />} />
           <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/exercise" element={<Exercise />} />
         </Routes>
       </div>
       <nav className="nav">
@@ -63,6 +65,10 @@ function App() {
         <NavLink to="/dialogues">
           <span className="nav-icon">&#x1F4AC;</span>
           Diálogos
+        </NavLink>
+        <NavLink to="/exercise">
+          <span className="nav-icon">&#x270F;&#xFE0F;</span>
+          Ejercicio
         </NavLink>
         <NavLink to="/progress">
           <span className="nav-icon">&#x1F4CA;</span>

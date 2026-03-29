@@ -107,6 +107,17 @@ export default function Home({ activeUser, onSwitchUser }: Props) {
           {todayProgress?.challengeDone ? '\u2705' : '\u27A1\uFE0F'}
         </div>
       </Link>
+
+      <Link to="/dialogues" className={`module-card ${todayProgress?.dialogueDone ? 'done' : ''}`}>
+        <div className="module-icon">&#x1F4AC;</div>
+        <div className="module-info">
+          <div className="module-title">Diálogo del día</div>
+          <div className="module-desc">Practica conversaciones reales</div>
+        </div>
+        <div className="module-status">
+          {todayProgress?.dialogueDone ? '\u2705' : '\u27A1\uFE0F'}
+        </div>
+      </Link>
     </div>
   );
 }

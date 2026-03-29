@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dialogues } from '../data/dialogues';
 import { useProgress } from '../hooks/useProgress';
@@ -9,22 +9,21 @@ const LINES_PER_STEP = 3;
 
 export default function Dialogues() {
   const navigate = useNavigate();
-  const { getDayNumber } = useProgress();
+  const { getDayNumber, updateTodayProgress, getTodayProgress } = useProgress();
   const { speak } = useSpeech();
 
   const dayNum = getDayNumber();
   const dialogue = dialogues[dayNum % dialogues.length];
+  const todayProgress = getTodayProgress();
 
   const [step, setStep] = useState(0);
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+  const [done, setDone] = useState(todayProgress?.dialogueDone ?? false);
 
   const totalSteps = Math.ceil(dialogue.lines.length / LINES_PER_STEP);
   const startIdx = step * LINES_PER_STEP;
   const visibleLines = dialogue.lines.slice(startIdx, startIdx + LINES_PER_STEP);
-
-  const allRevealed = useMemo(() => {
-    return visibleLines.every((_, i) => revealed[startIdx + i]);
-  }, [revealed, startIdx, visibleLines]);
+  const isLastStep = step === totalSteps - 1;
 
   const toggleReveal = (idx: number) => {
     setRevealed(prev => ({ ...prev, [idx]: !prev[idx] }));
@@ -49,6 +48,11 @@ export default function Dialogues() {
     speak(text);
   };
 
+  const handleDone = () => {
+    setDone(true);
+    updateTodayProgress({ dialogueDone: true });
+  };
+
   return (
     <div className="fade-in">
       <div className="page-title">
@@ -56,6 +60,7 @@ export default function Dialogues() {
           &#x2190;
         </button>
         Diálogo del día
+        {done && <span style={{ marginLeft: 'auto', fontSize: 20 }}>✅</span>}
       </div>
 
       <div className="card">
@@ -120,7 +125,7 @@ export default function Dialogues() {
           </button>
           <button
             className="btn btn-primary"
-            disabled={step === totalSteps - 1}
+            disabled={isLastStep}
             onClick={nextStep}
             style={{ flex: 1 }}
           >
@@ -128,10 +133,16 @@ export default function Dialogues() {
           </button>
         </div>
 
-        {step === totalSteps - 1 && allRevealed && (
-          <button className="btn btn-success" onClick={() => navigate('/')} style={{ marginTop: 10 }}>
-            Volver al inicio
+        {isLastStep && !done && (
+          <button className="btn btn-success" onClick={handleDone} style={{ marginTop: 10 }}>
+            Marcar como completado ✓
           </button>
+        )}
+
+        {isLastStep && done && (
+          <div className="dialogue-done-banner fade-in">
+            <span>&#x1F389;</span> Dialogo completado hoy
+          </div>
         )}
       </div>
     </div>

@@ -7,6 +7,7 @@ export interface DayProgress {
   vocabQuizDone: boolean;
   conjugationDone: boolean;
   challengeDone: boolean;
+  dialogueDone: boolean;
   vocabScore?: number;
   conjugationScore?: number;
   challengeScore?: number;
@@ -106,16 +107,17 @@ export function useProgress() {
             vocabQuizDone: false,
             conjugationDone: false,
             challengeDone: false,
+            dialogueDone: false,
             ...update,
           },
         ];
       }
 
-      // Update streak
+      // Update streak (use local date to avoid UTC timezone mismatch)
       let streak = prev.currentStreak;
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      const yd = new Date();
+      yd.setDate(yd.getDate() - 1);
+      const yesterdayStr = `${yd.getFullYear()}-${String(yd.getMonth() + 1).padStart(2, '0')}-${String(yd.getDate()).padStart(2, '0')}`;
 
       if (prev.lastActiveDate === yesterdayStr || prev.lastActiveDate === today) {
         if (prev.lastActiveDate !== today) {
