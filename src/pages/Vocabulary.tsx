@@ -144,7 +144,11 @@ export default function Vocabulary() {
             <span>Modo escucha</span>
             <button
               className={`toggle-btn ${listenMode ? 'on' : ''}`}
-              onClick={() => setListenMode(m => !m)}
+              onClick={() => {
+                const next = !listenMode;
+                setListenMode(next);
+                if (next && todayWord) speakFrench(todayWord.french);
+              }}
               aria-label="Activar modo escucha"
             >
               <div className="toggle-thumb" />

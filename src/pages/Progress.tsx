@@ -244,7 +244,7 @@ export default function ProgressPage() {
       </div>
 
       {/* Leaderboard */}
-      {leaderboard.length > 1 && (
+      {leaderboard.length > 0 && (
         <div className="card">
           <div className="card-title" style={{ marginBottom: 14 }}>Clasificación</div>
           {leaderboard.map((entry, i) => (
