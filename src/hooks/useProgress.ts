@@ -62,7 +62,7 @@ function computeStreaks(days: DayProgress[]): { currentStreak: number; longestSt
 export async function loadProgressFromSupabase(userId: string): Promise<void> {
   const [{ data: days }, { data: profile }] = await Promise.all([
     supabase.from('progress').select('*').eq('user_id', userId),
-    supabase.from('profiles').select('words_learned').eq('id', userId).single(),
+    supabase.from('profiles').select('id, name, words_learned').eq('id', userId).single(),
   ]);
 
   const completedDays: DayProgress[] = (days ?? []).map(row => ({

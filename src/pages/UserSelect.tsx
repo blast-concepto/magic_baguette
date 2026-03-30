@@ -50,6 +50,7 @@ export default function UserSelect({ onSelect }: Props) {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,11 +67,14 @@ export default function UserSelect({ onSelect }: Props) {
   const handleCreate = async () => {
     if (!name.trim() || saving) return;
     setSaving(true);
+    setError(null);
     try {
       const user = await createUser(name);
       setActiveUserId(user.id);
       onSelect(user);
-    } catch {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
       setSaving(false);
     }
   };
@@ -164,8 +168,11 @@ export default function UserSelect({ onSelect }: Props) {
                   maxLength={20}
                   disabled={saving}
                 />
+                {error && (
+                  <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 8 }}>{error}</p>
+                )}
                 <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                  <button className="btn btn-outline" style={{ flex: 1, padding: '10px' }} onClick={() => { setCreating(false); setName(''); }} disabled={saving}>
+                  <button className="btn btn-outline" style={{ flex: 1, padding: '10px' }} onClick={() => { setCreating(false); setName(''); setError(null); }} disabled={saving}>
                     Cancelar
                   </button>
                   <button className="btn btn-primary" style={{ flex: 1, padding: '10px' }} onClick={handleCreate} disabled={!name.trim() || saving}>
