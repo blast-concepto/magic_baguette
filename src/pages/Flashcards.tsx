@@ -40,10 +40,13 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+const NO_IMAGE_CATEGORIES = new Set(['connectors', 'questions']);
+
 function pickMode(word: typeof vocabulary[0]): QuizMode {
   const hasExample = word.examples?.length > 0;
   const ex0 = hasExample ? word.examples[0].french : '';
   const canContext = hasExample && ex0.toLowerCase().includes(word.french.toLowerCase());
+  const canImage = !NO_IMAGE_CATEGORIES.has(word.category);
 
   const r = Math.random();
   if (canContext) {
@@ -51,12 +54,12 @@ function pickMode(word: typeof vocabulary[0]): QuizMode {
     if (r < 0.50) return 'es-fr';
     if (r < 0.65) return 'listen';
     if (r < 0.80) return 'context';
-    return 'image';
+    return canImage ? 'image' : 'fr-es';
   }
   if (r < 0.30) return 'fr-es';
   if (r < 0.55) return 'es-fr';
   if (r < 0.75) return 'listen';
-  return 'image';
+  return canImage ? 'image' : 'fr-es';
 }
 
 function buildCard(word: typeof vocabulary[0]): QuizCard {
@@ -77,6 +80,86 @@ function buildCard(word: typeof vocabulary[0]): QuizCard {
   const wrongs = others.slice(0, 3).map(w => w.english);
   const options = shuffle([word.english, ...wrongs]);
   return { word, mode, options, correctIndex: options.indexOf(word.english) };
+}
+
+// ── Emoji visual for "image" mode ────────────────────────
+const WORD_EMOJI: Record<string, string> = {
+  // greetings
+  'bonjour': '👋', 'bonsoir': '🌙', 'au revoir': '👋', 'merci': '🙏',
+  "s'il vous plaît": '🤲', 'excusez-moi': '😅', 'pardon': '😊',
+  'salut': '✌️', 'bienvenue': '🎉', 'bonne nuit': '😴',
+  // numbers
+  'un': '☝️', 'deux': '✌️', 'trois': '🤟', 'dix': '🔟', 'cent': '💯',
+  // time
+  "aujourd'hui": '📅', 'demain': '🌅', 'hier': '🕰️', 'maintenant': '⏰',
+  'toujours': '♾️', 'jamais': '🚫', 'souvent': '🔄',
+  'le matin': '🌄', 'le soir': '🌆', 'la semaine': '📆',
+  // food
+  'le pain': '🍞', "l'eau": '💧', 'le vin': '🍷', 'le café': '☕',
+  'le fromage': '🧀', 'la viande': '🥩', 'le repas': '🍽️',
+  'le fruit': '🍎', 'le légume': '🥦', 'le poulet': '🍗',
+  // transport
+  'la voiture': '🚗', 'le train': '🚆', 'le bus': '🚌',
+  'le billet': '🎫', 'la rue': '🛣️', 'la gare': '🚉', "l'aéroport": '✈️',
+  // emotions
+  'content': '😊', 'triste': '😢', 'fatigué': '😴', 'en colère': '😡',
+  'heureux': '😄', 'inquiet': '😟', 'surpris': '😲', 'malade': '🤒',
+  // body
+  'la tête': '🧠', 'la main': '🖐️', 'le cœur': '❤️',
+  'les yeux': '👀', 'le dos': '🦴', 'la douleur': '💢', 'la taille': '📏',
+  // nature
+  "l'arbre": '🌳', 'la fleur': '🌸', 'la mer': '🌊',
+  'la montagne': '⛰️', 'la neige': '❄️', 'la pluie': '🌧️',
+  'le ciel': '🌤️', 'le soleil': '☀️', 'le vent': '💨', 'le nuage': '☁️',
+  // house
+  'la maison': '🏠', 'la chambre': '🛏️', 'la cuisine': '🍳',
+  'la fenêtre': '🪟', 'la porte': '🚪', 'la clé': '🔑', "l'appartement": '🏢',
+  // family & people
+  'la famille': '👨‍👩‍👧', 'la femme': '👩', "l'homme": '👨',
+  'la mère': '👩‍👦', 'le père': '👨‍👦', 'le fils': '👦', 'la fille': '👧',
+  "l'enfant": '🧒', "l'ami": '👫', 'le mari': '💍',
+  // clothes
+  'la robe': '👗', 'le pantalon': '👖', 'le manteau': '🧥',
+  'les chaussures': '👟', 'le sac': '👜',
+  // places
+  'le restaurant': '🍽️', 'la banque': '🏦', "l'hôpital": '🏥',
+  'la pharmacie': '💊', 'le magasin': '🏪', "l'école": '🏫',
+  // work
+  'le travail': '💼', 'le bureau': '🖥️', 'la réunion': '👥',
+  // weather
+  'il fait beau': '☀️', 'il pleut': '🌧️',
+  // descriptions
+  'grand': '📏', 'petit': '🔬', 'nouveau': '✨', 'vieux': '🏚️',
+  'beau': '😍', 'joli': '🌸', 'bon': '👍', 'mauvais': '👎',
+  'cher': '💰', 'gratuit': '🆓', 'rapide': '🚀', 'lent': '🐢',
+  'difficile': '💪', 'facile': '😌', 'important': '⭐',
+  'ouvert': '🔓', 'fermé': '🔒', 'chaud': '🌡️', 'froid': '🥶',
+  // actions
+  'manger': '🍽️', 'boire': '🥤', 'dormir': '😴', 'travailler': '👷',
+  'aller': '🚶', 'venir': '🔜', 'partir': '🏃', 'rester': '🏠',
+  'parler': '💬', 'écouter': '👂', 'voir': '👁️', 'regarder': '👀',
+  'lire': '📚', 'écrire': '✍️', 'apprendre': '🎓', 'comprendre': '🧠',
+  'savoir': '💡', 'connaître': '🤝', 'aimer': '❤️', 'pouvoir': '💪',
+  'faire': '🔨', 'dire': '💬', 'demander': '❓', 'trouver': '🔍',
+  'chercher': '🔎', 'acheter': '🛒', 'payer': '💳', 'donner': '🎁',
+  'prendre': '✊', 'mettre': '📌', 'ouvrir': '🔓', 'fermer': '🔒',
+  'commencer': '🚦', 'finir': '🏁', 'appeler': '📞', 'aider': '🤝',
+  'essayer': '🎯', 'attendre': '⏳', 'penser': '🤔',
+  // shopping & money
+  "l'argent": '💰', 'le prix': '🏷️', 'la carte': '🗺️', 'le cadeau': '🎁',
+  'le médicament': '💊', 'le médecin': '👨‍⚕️',
+};
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  greetings: '👋', numbers: '🔢', time: '⏰', food: '🍽️',
+  transport: '🚗', emotions: '😊', body: '🫁', nature: '🌿',
+  house: '🏠', family: '👨‍👩‍👧', clothes: '👕', places: '📍',
+  work: '💼', weather: '⛅', health: '🏥', actions: '🎯',
+  descriptions: '✨', shopping: '🛒', connectors: '🔗', questions: '❓',
+};
+
+function getWordEmoji(word: typeof vocabulary[0]): string {
+  return WORD_EMOJI[word.french] ?? CATEGORY_EMOJI[word.category] ?? '💬';
 }
 
 const MODE_LABELS: Record<QuizMode, string> = {
@@ -311,36 +394,22 @@ export default function Flashcards() {
 
         {mode === 'image' && (
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ position: 'relative', display: 'inline-block', width: '100%', maxWidth: 320, margin: '0 auto 14px' }}>
-              <img
-                src={`https://loremflickr.com/320/200/${encodeURIComponent(word.english)}/all`}
-                alt={word.english}
-                style={{ width: '100%', height: 180, objectFit: 'cover', borderRadius: 12, display: 'block' }}
-                onError={e => {
-                  const img = e.target as HTMLImageElement;
-                  img.style.display = 'none';
-                  const fallback = img.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-              {/* fallback shown if image fails */}
-              <div style={{ display: 'none', width: '100%', height: 180, borderRadius: 12, background: 'var(--border-light)', alignItems: 'center', justifyContent: 'center', fontSize: 48 }}>
-                🖼️
-              </div>
-              {answered && (
-                <div style={{
-                  position: 'absolute', bottom: 0, left: 0, right: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
-                  borderRadius: '0 0 12px 12px',
-                  padding: '20px 12px 10px',
-                  color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em',
-                }}>
-                  {word.french}
-                  <div style={{ fontSize: 13, fontWeight: 500, opacity: 0.85 }}>{word.english}</div>
-                </div>
-              )}
+            <div style={{
+              width: 140, height: 140, borderRadius: 24, margin: '0 auto 16px',
+              background: 'var(--border-light)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 72, lineHeight: 1,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            }}>
+              {getWordEmoji(word)}
             </div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light)' }}>¿Qué palabra francesa corresponde a esta imagen?</div>
+            {answered && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.02em' }}>{word.french}</div>
+                <div style={{ fontSize: 14, color: 'var(--text-light)', marginTop: 2 }}>{word.english}</div>
+              </div>
+            )}
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light)' }}>¿Qué palabra francesa corresponde a este emoji?</div>
           </div>
         )}
 
