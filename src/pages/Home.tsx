@@ -121,6 +121,19 @@ export default function Home({ activeUser, onSwitchUser }: Props) {
         </div>
       </Link>
 
+      <Link to="/units" className="module-card">
+        <div className="module-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div className="module-info">
+          <div className="module-title">Unidades temáticas</div>
+          <div className="module-desc">Practica por tema: comida, viajes…</div>
+        </div>
+        <div className="module-status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </Link>
+
       <Link to="/dialogues" className={`module-card ${todayProgress?.dialogueDone ? 'done' : ''}`}>
         <div className="module-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>

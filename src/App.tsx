@@ -8,6 +8,8 @@ import Dialogues from './pages/Dialogues';
 import ProgressPage from './pages/Progress';
 import Exercise from './pages/Exercise';
 import Flashcards from './pages/Flashcards';
+import Units from './pages/Units';
+import Onboarding from './pages/Onboarding';
 import UserSelect from './pages/UserSelect';
 import { getActiveUserId, setActiveUserId, getProgressKey } from './hooks/useUsers';
 import { loadProgressFromSupabase } from './hooks/useProgress';
@@ -15,7 +17,8 @@ import { supabase } from './lib/supabase';
 import type { User } from './hooks/useUsers';
 import './index.css';
 
-type AppState = 'loading' | 'select' | 'app';
+type AppState = 'loading' | 'select' | 'onboarding' | 'app';
+const ONBOARDED_KEY = 'mb-onboarded';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(() =>
@@ -35,7 +38,7 @@ function App() {
         if (!data) { setActiveUserId(null); setAppState('select'); return; }
         setActiveUser(data);
         await loadProgressFromSupabase(uid);
-        setAppState('app');
+        setAppState('app'); // returning users skip onboarding
       } catch {
         setActiveUserId(null); setAppState('select');
       }
@@ -45,7 +48,17 @@ function App() {
   const handleSelectUser = async (user: User) => {
     setActiveUserId(user.id);
     setActiveUser(user);
-    setAppState('loading');  // triggers useEffect above which hydrates + enters app
+    // New user (no onboarded flag) → show onboarding first
+    if (!localStorage.getItem(ONBOARDED_KEY)) {
+      setAppState('onboarding');
+    } else {
+      setAppState('loading');
+    }
+  };
+
+  const handleOnboardingDone = () => {
+    localStorage.setItem(ONBOARDED_KEY, '1');
+    setAppState('loading');
   };
 
   const handleSwitchUser = () => {
@@ -66,9 +79,8 @@ function App() {
     );
   }
 
-  if (appState === 'select') {
-    return <UserSelect onSelect={handleSelectUser} />;
-  }
+  if (appState === 'select') return <UserSelect onSelect={handleSelectUser} />;
+  if (appState === 'onboarding') return <Onboarding onDone={handleOnboardingDone} />;
 
   return (
     <HashRouter>
@@ -82,6 +94,7 @@ function App() {
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/exercise" element={<Exercise />} />
           <Route path="/flashcards" element={<Flashcards />} />
+          <Route path="/units" element={<Units />} />
         </Routes>
       </div>
       <nav className="nav">
