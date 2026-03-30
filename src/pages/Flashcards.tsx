@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProgress } from '../hooks/useProgress';
 import { vocabulary } from '../data/vocabulary';
 import SpeakButton from '../components/SpeakButton';
+import { useSpeech } from '../hooks/useSpeech';
 
 const SRS_KEY = 'mb-srs';
 
@@ -37,15 +38,6 @@ function shuffle<T>(arr: T[]): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
-}
-
-function speakFrench(text: string) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR';
-  u.rate = 0.9;
-  window.speechSynthesis.speak(u);
 }
 
 function pickMode(word: typeof vocabulary[0]): QuizMode {
@@ -101,6 +93,7 @@ const MODE_COLORS: Record<QuizMode, string> = {
 
 export default function Flashcards() {
   const navigate = useNavigate();
+  const { speak } = useSpeech();
   const { progress } = useProgress();
   const today = getToday();
 
@@ -138,7 +131,7 @@ export default function Flashcards() {
   // Auto-speak for listen mode when card changes
   useEffect(() => {
     if (!card || card.mode !== 'listen') return;
-    const t = setTimeout(() => speakFrench(card.word.french), 300);
+    const t = setTimeout(() => speak(card.word.french), 300);
     return () => clearTimeout(t);
   }, [index, card?.mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -286,7 +279,7 @@ export default function Flashcards() {
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <button
               className="listen-play-btn"
-              onClick={() => speakFrench(word.french)}
+              onClick={() => speak(word.french)}
               style={{ margin: '0 auto 10px' }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="32" height="32">

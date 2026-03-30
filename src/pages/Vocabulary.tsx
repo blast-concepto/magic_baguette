@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { vocabulary } from '../data/vocabulary';
 import { useProgress } from '../hooks/useProgress';
 import SpeakButton from '../components/SpeakButton';
+import { useSpeech } from '../hooks/useSpeech';
 
 interface QuizQuestion {
   word: typeof vocabulary[0];
@@ -29,20 +30,12 @@ function generateQuiz(count: number, category?: string): QuizQuestion[] {
   });
 }
 
-function speakFrench(text: string) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR';
-  u.rate = 0.9;
-  window.speechSynthesis.speak(u);
-}
-
 export default function Vocabulary() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const filterCategory = searchParams.get('category') ?? undefined;
   const { markWordLearned, updateTodayProgress, getWordOfTheDay } = useProgress();
+  const { speak } = useSpeech();
 
   const wordIndex = getWordOfTheDay(vocabulary.length);
   const todayWord = vocabulary[wordIndex];
@@ -76,7 +69,7 @@ export default function Vocabulary() {
   // Auto-speak in listen mode when question changes
   useEffect(() => {
     if (phase === 'quiz' && listenMode && questions[currentQ]) {
-      setTimeout(() => speakFrench(questions[currentQ].word.french), 200);
+      setTimeout(() => speak(questions[currentQ].word.french), 200);
     }
   }, [phase, listenMode, currentQ, questions]);
 
@@ -147,7 +140,7 @@ export default function Vocabulary() {
               onClick={() => {
                 const next = !listenMode;
                 setListenMode(next);
-                if (next && todayWord) speakFrench(todayWord.french);
+                if (next && todayWord) speak(todayWord.french);
               }}
               aria-label="Activar modo escucha"
             >
@@ -175,7 +168,7 @@ export default function Vocabulary() {
                 onClick={() => {
                   const next = !listenMode;
                   setListenMode(next);
-                  if (next) speakFrench(questions[currentQ].word.french);
+                  if (next) speak(questions[currentQ].word.french);
                 }}
                 aria-label="Modo escucha"
               >
@@ -186,7 +179,7 @@ export default function Vocabulary() {
 
           {listenMode ? (
             <div className="listen-mode-question">
-              <button className="listen-play-btn" onClick={() => speakFrench(questions[currentQ].word.french)}>
+              <button className="listen-play-btn" onClick={() => speak(questions[currentQ].word.french)}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="32" height="32"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
               </button>
               <p style={{ color: 'var(--text-light)', fontSize: 13, marginTop: 10 }}>Escucha y elige la traducción</p>
