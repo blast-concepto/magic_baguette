@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getUsers, createUser, setActiveUserId, deleteUser } from '../hooks/useUsers';
 import type { User } from '../hooks/useUsers';
 import Avatar from '../components/Avatar';
@@ -22,25 +22,20 @@ function BaguetteLogo() {
           <stop offset="100%" stopColor="#d97706"/>
         </linearGradient>
       </defs>
-      {/* Background circle */}
       <circle cx="44" cy="44" r="40" fill="url(#logoGlow)"/>
-      {/* Baguette */}
       <g transform="rotate(-22, 44, 44)">
         <rect x="14" y="38" width="60" height="14" rx="7" fill="url(#baguette)"/>
-        {/* Score marks */}
         <line x1="28" y1="38" x2="26" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
         <line x1="38" y1="38" x2="36" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
         <line x1="48" y1="38" x2="46" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
         <line x1="58" y1="38" x2="56" y2="52" stroke="rgba(255,210,100,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
       </g>
-      {/* Sparkle top-right */}
       <g transform="translate(68, 16)" stroke="#6366f1" strokeLinecap="round">
         <line x1="0" y1="-6" x2="0" y2="6" strokeWidth="2.5"/>
         <line x1="-6" y1="0" x2="6" y2="0" strokeWidth="2.5"/>
         <line x1="-4" y1="-4" x2="4" y2="4" strokeWidth="1.5" opacity="0.4"/>
         <line x1="4" y1="-4" x2="-4" y2="4" strokeWidth="1.5" opacity="0.4"/>
       </g>
-      {/* Small sparkle bottom-left */}
       <g transform="translate(18, 68)" stroke="#ec4899" strokeLinecap="round">
         <line x1="0" y1="-4" x2="0" y2="4" strokeWidth="2"/>
         <line x1="-4" y1="0" x2="4" y2="0" strokeWidth="2"/>
@@ -50,29 +45,39 @@ function BaguetteLogo() {
 }
 
 export default function UserSelect({ onSelect }: Props) {
-  const [users, setUsers] = useState<User[]>(getUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
+  const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    getUsers()
+      .then(setUsers)
+      .finally(() => setLoadingUsers(false));
+  }, []);
 
   const handleSelect = (user: User) => {
     setActiveUserId(user.id);
     onSelect(user);
   };
 
-  const handleCreate = () => {
-    if (!name.trim()) return;
-    const user = createUser(name);
-    setUsers(getUsers());
-    setCreating(false);
-    setName('');
-    setActiveUserId(user.id);
-    onSelect(user);
+  const handleCreate = async () => {
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    try {
+      const user = await createUser(name);
+      setActiveUserId(user.id);
+      onSelect(user);
+    } catch {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    deleteUser(id);
-    setUsers(getUsers());
+  const handleDelete = async (id: string) => {
+    await deleteUser(id);
+    setUsers(prev => prev.filter(u => u.id !== id));
     setConfirmDelete(null);
   };
 
@@ -106,61 +111,70 @@ export default function UserSelect({ onSelect }: Props) {
       <p className="user-select-sub">Elige tu perfil para continuar</p>
 
       <div className="user-list">
-        {users.map(user => (
-          <div key={user.id} className="user-card-wrapper">
-            {confirmDelete === user.id ? (
-              <div className="user-card user-card-confirm">
-                <span style={{ fontSize: 14 }}>¿Eliminar a <strong>{user.name}</strong>?</span>
+        {loadingUsers ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+            <div className="spinner" />
+          </div>
+        ) : (
+          <>
+            {users.map(user => (
+              <div key={user.id} className="user-card-wrapper">
+                {confirmDelete === user.id ? (
+                  <div className="user-card user-card-confirm">
+                    <span style={{ fontSize: 14 }}>¿Eliminar a <strong>{user.name}</strong>?</span>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                      <button className="btn btn-outline" style={{ flex: 1, padding: '8px' }} onClick={() => setConfirmDelete(null)}>
+                        Cancelar
+                      </button>
+                      <button className="btn btn-danger" style={{ flex: 1, padding: '8px' }} onClick={() => handleDelete(user.id)}>
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="user-card" onClick={() => handleSelect(user)}>
+                    <Avatar name={user.name} />
+                    <div className="user-card-name">{user.name}</div>
+                    <button
+                      className="user-card-delete"
+                      onClick={e => { e.stopPropagation(); setConfirmDelete(user.id); }}
+                      aria-label="Eliminar usuario"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {!creating ? (
+              <button className="user-card user-card-new" onClick={() => setCreating(true)}>
+                <div className="user-card-plus">+</div>
+                <div className="user-card-name" style={{ opacity: 0.5 }}>Nuevo perfil</div>
+              </button>
+            ) : (
+              <div className="user-create-form fade-in">
+                <input
+                  className="user-create-input"
+                  placeholder="Tu nombre..."
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setCreating(false); }}
+                  autoFocus
+                  maxLength={20}
+                  disabled={saving}
+                />
                 <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                  <button className="btn btn-outline" style={{ flex: 1, padding: '8px' }} onClick={() => setConfirmDelete(null)}>
+                  <button className="btn btn-outline" style={{ flex: 1, padding: '10px' }} onClick={() => { setCreating(false); setName(''); }} disabled={saving}>
                     Cancelar
                   </button>
-                  <button className="btn btn-danger" style={{ flex: 1, padding: '8px' }} onClick={() => handleDelete(user.id)}>
-                    Eliminar
+                  <button className="btn btn-primary" style={{ flex: 1, padding: '10px' }} onClick={handleCreate} disabled={!name.trim() || saving}>
+                    {saving ? '…' : 'Entrar'}
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="user-card" onClick={() => handleSelect(user)}>
-                <Avatar name={user.name} />
-                <div className="user-card-name">{user.name}</div>
-                <button
-                  className="user-card-delete"
-                  onClick={e => { e.stopPropagation(); setConfirmDelete(user.id); }}
-                  aria-label="Eliminar usuario"
-                >
-                  ×
-                </button>
-              </div>
             )}
-          </div>
-        ))}
-
-        {!creating ? (
-          <button className="user-card user-card-new" onClick={() => setCreating(true)}>
-            <div className="user-card-plus">+</div>
-            <div className="user-card-name" style={{ opacity: 0.5 }}>Nuevo perfil</div>
-          </button>
-        ) : (
-          <div className="user-create-form fade-in">
-            <input
-              className="user-create-input"
-              placeholder="Tu nombre..."
-              value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setCreating(false); }}
-              autoFocus
-              maxLength={20}
-            />
-            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <button className="btn btn-outline" style={{ flex: 1, padding: '10px' }} onClick={() => { setCreating(false); setName(''); }}>
-                Cancelar
-              </button>
-              <button className="btn btn-primary" style={{ flex: 1, padding: '10px' }} onClick={handleCreate} disabled={!name.trim()}>
-                Entrar
-              </button>
-            </div>
-          </div>
+          </>
         )}
       </div>
     </div>

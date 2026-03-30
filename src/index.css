@@ -1423,6 +1423,16 @@ body {
   gap: 8px;
 }
 
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
 /* Section label */
 .section-label {
   font-size: 10px;

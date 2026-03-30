@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { getActiveUserId, getProgressKey } from './useUsers';
 
 export interface DayProgress {
@@ -21,11 +22,6 @@ export interface Progress {
   lastActiveDate: string;
 }
 
-function getStorageKey(): string {
-  const uid = getActiveUserId();
-  return uid ? getProgressKey(uid) : 'french-daily-progress';
-}
-
 const defaultProgress: Progress = {
   currentStreak: 0,
   longestStreak: 0,
@@ -36,25 +32,93 @@ const defaultProgress: Progress = {
 
 function getToday(): string {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+function computeStreaks(days: DayProgress[]): { currentStreak: number; longestStreak: number; lastActiveDate: string } {
+  if (days.length === 0) return { currentStreak: 0, longestStreak: 0, lastActiveDate: '' };
+
+  const sortedDates = [...new Set(days.map(d => d.date))].sort();
+  const lastDate = sortedDates[sortedDates.length - 1];
+
+  let streak = 1;
+  let longestStreak = 1;
+  for (let i = 1; i < sortedDates.length; i++) {
+    const diff = (new Date(sortedDates[i]).getTime() - new Date(sortedDates[i - 1]).getTime()) / 86400000;
+    if (diff === 1) { streak++; longestStreak = Math.max(longestStreak, streak); }
+    else streak = 1;
+  }
+
+  const today = getToday();
+  const yd = new Date(); yd.setDate(yd.getDate() - 1);
+  const yesterday = `${yd.getFullYear()}-${String(yd.getMonth() + 1).padStart(2, '0')}-${String(yd.getDate()).padStart(2, '0')}`;
+
+  const currentStreak = (lastDate === today || lastDate === yesterday) ? streak : 0;
+  return { currentStreak, longestStreak, lastActiveDate: lastDate };
+}
+
+// ── Supabase sync helpers ───────────────────────────────────────────────────
+
+export async function loadProgressFromSupabase(userId: string): Promise<void> {
+  const [{ data: days }, { data: profile }] = await Promise.all([
+    supabase.from('progress').select('*').eq('user_id', userId),
+    supabase.from('profiles').select('words_learned').eq('id', userId).single(),
+  ]);
+
+  const completedDays: DayProgress[] = (days ?? []).map(row => ({
+    date: row.date,
+    wordId: 0,
+    vocabQuizDone: row.vocab_quiz_done ?? false,
+    conjugationDone: row.conjugation_done ?? false,
+    challengeDone: row.challenge_done ?? false,
+    dialogueDone: row.dialogue_done ?? false,
+    vocabScore: row.vocab_score ?? undefined,
+    conjugationScore: row.conjugation_score ?? undefined,
+    challengeScore: row.challenge_score ?? undefined,
+  }));
+
+  const wordsLearned: number[] = profile?.words_learned ?? [];
+  const { currentStreak, longestStreak, lastActiveDate } = computeStreaks(completedDays);
+
+  const progress: Progress = { completedDays, wordsLearned, currentStreak, longestStreak, lastActiveDate };
+  localStorage.setItem(getProgressKey(userId), JSON.stringify(progress));
+}
+
+async function syncDay(userId: string, day: DayProgress): Promise<void> {
+  await supabase.from('progress').upsert({
+    user_id: userId,
+    date: day.date,
+    vocab_quiz_done: day.vocabQuizDone,
+    conjugation_done: day.conjugationDone,
+    challenge_done: day.challengeDone,
+    dialogue_done: day.dialogueDone,
+    vocab_score: day.vocabScore ?? null,
+    conjugation_score: day.conjugationScore ?? null,
+    challenge_score: day.challengeScore ?? null,
+  }, { onConflict: 'user_id,date' });
+}
+
+async function syncWords(userId: string, wordIds: number[]): Promise<void> {
+  await supabase.from('profiles').update({ words_learned: wordIds }).eq('id', userId);
+}
+
+// ── Hook ────────────────────────────────────────────────────────────────────
+
+function getStorageKey(): string {
+  const uid = getActiveUserId();
+  return uid ? getProgressKey(uid) : 'mb-progress-guest';
 }
 
 export function useProgress() {
   const storageKey = getStorageKey();
 
   const [progress, setProgress] = useState<Progress>(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return defaultProgress;
-      }
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : defaultProgress;
+    } catch {
+      return defaultProgress;
     }
-    return defaultProgress;
   });
 
   useEffect(() => {
@@ -63,87 +127,60 @@ export function useProgress() {
 
   const today = getToday();
 
-  const getTodayProgress = (): DayProgress | undefined => {
-    return progress.completedDays.find(d => d.date === today);
-  };
+  const getTodayProgress = (): DayProgress | undefined =>
+    progress.completedDays.find(d => d.date === today);
 
   const getDayNumber = (): number => {
-    // Use absolute date calculation based on a fixed epoch (2025-01-01)
-    // This ensures each calendar day always gets a unique, stable number
-    // regardless of when the user first opened the app
-    const epoch = new Date(2025, 0, 1); // Jan 1 2025, local time
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return Math.floor((now.getTime() - epoch.getTime()) / (1000 * 60 * 60 * 24));
+    const epoch = new Date(2025, 0, 1);
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    return Math.floor((now.getTime() - epoch.getTime()) / 86400000);
   };
 
-  const getWordOfTheDay = (totalWords: number): number => {
-    const dayNum = getDayNumber();
-    return dayNum % totalWords;
-  };
+  const getWordOfTheDay = (totalWords: number): number => getDayNumber() % totalWords;
 
   const markWordLearned = (wordId: number) => {
     setProgress(prev => {
       if (prev.wordsLearned.includes(wordId)) return prev;
-      return { ...prev, wordsLearned: [...prev.wordsLearned, wordId] };
+      const updated = { ...prev, wordsLearned: [...prev.wordsLearned, wordId] };
+      const uid = getActiveUserId();
+      if (uid) syncWords(uid, updated.wordsLearned).catch(console.error);
+      return updated;
     });
   };
 
   const updateTodayProgress = (update: Partial<DayProgress>) => {
     setProgress(prev => {
       const existing = prev.completedDays.find(d => d.date === today);
-      let newDays: DayProgress[];
+      const newDays: DayProgress[] = existing
+        ? prev.completedDays.map(d => d.date === today ? { ...d, ...update } : d)
+        : [...prev.completedDays, { date: today, wordId: 0, vocabQuizDone: false, conjugationDone: false, challengeDone: false, dialogueDone: false, ...update }];
 
-      if (existing) {
-        newDays = prev.completedDays.map(d =>
-          d.date === today ? { ...d, ...update } : d
-        );
-      } else {
-        newDays = [
-          ...prev.completedDays,
-          {
-            date: today,
-            wordId: 0,
-            vocabQuizDone: false,
-            conjugationDone: false,
-            challengeDone: false,
-            dialogueDone: false,
-            ...update,
-          },
-        ];
-      }
-
-      // Update streak (use local date to avoid UTC timezone mismatch)
+      const yd = new Date(); yd.setDate(yd.getDate() - 1);
+      const yesterday = `${yd.getFullYear()}-${String(yd.getMonth() + 1).padStart(2, '0')}-${String(yd.getDate()).padStart(2, '0')}`;
       let streak = prev.currentStreak;
-      const yd = new Date();
-      yd.setDate(yd.getDate() - 1);
-      const yesterdayStr = `${yd.getFullYear()}-${String(yd.getMonth() + 1).padStart(2, '0')}-${String(yd.getDate()).padStart(2, '0')}`;
-
-      if (prev.lastActiveDate === yesterdayStr || prev.lastActiveDate === today) {
-        if (prev.lastActiveDate !== today) {
-          streak += 1;
-        }
+      if (prev.lastActiveDate === yesterday || prev.lastActiveDate === today) {
+        if (prev.lastActiveDate !== today) streak += 1;
       } else if (prev.lastActiveDate !== today) {
         streak = 1;
       }
 
-      return {
+      const newProgress = {
         ...prev,
         completedDays: newDays,
         lastActiveDate: today,
         currentStreak: streak,
         longestStreak: Math.max(prev.longestStreak, streak),
       };
+
+      const uid = getActiveUserId();
+      if (uid) {
+        const todayDay = newProgress.completedDays.find(d => d.date === today);
+        if (todayDay) syncDay(uid, todayDay).catch(console.error);
+      }
+
+      return newProgress;
     });
   };
 
-  return {
-    progress,
-    today,
-    getTodayProgress,
-    getDayNumber,
-    getWordOfTheDay,
-    markWordLearned,
-    updateTodayProgress,
-  };
+  return { progress, today, getTodayProgress, getDayNumber, getWordOfTheDay, markWordLearned, updateTodayProgress };
 }

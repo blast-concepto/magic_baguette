@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
 import Home from './pages/Home';
 import Vocabulary from './pages/Vocabulary';
@@ -8,27 +8,64 @@ import Dialogues from './pages/Dialogues';
 import ProgressPage from './pages/Progress';
 import Exercise from './pages/Exercise';
 import UserSelect from './pages/UserSelect';
-import { getActiveUserId, getUsers, setActiveUserId } from './hooks/useUsers';
+import { getActiveUserId, setActiveUserId, getProgressKey } from './hooks/useUsers';
+import { loadProgressFromSupabase } from './hooks/useProgress';
+import { supabase } from './lib/supabase';
 import type { User } from './hooks/useUsers';
 import './index.css';
 
-function App() {
-  const [activeUser, setActiveUser] = useState<User | null>(() => {
-    const id = getActiveUserId();
-    if (!id) return null;
-    return getUsers().find(u => u.id === id) ?? null;
-  });
+type AppState = 'loading' | 'select' | 'app';
 
-  const handleSelectUser = (user: User) => {
+function App() {
+  const [appState, setAppState] = useState<AppState>(() =>
+    getActiveUserId() ? 'loading' : 'select'
+  );
+  const [activeUser, setActiveUser] = useState<User | null>(null);
+
+  // On first load: verify stored user still exists + hydrate progress from Supabase
+  useEffect(() => {
+    if (appState !== 'loading') return;
+    const uid = getActiveUserId();
+    if (!uid) { setAppState('select'); return; }
+
+    (async () => {
+      try {
+        const { data } = await supabase.from('profiles').select('id, name, created_at').eq('id', uid).single();
+        if (!data) { setActiveUserId(null); setAppState('select'); return; }
+        setActiveUser(data);
+        await loadProgressFromSupabase(uid);
+        setAppState('app');
+      } catch {
+        setActiveUserId(null); setAppState('select');
+      }
+    })();
+  }, [appState]);
+
+  const handleSelectUser = async (user: User) => {
+    setActiveUserId(user.id);
     setActiveUser(user);
+    setAppState('loading');  // triggers useEffect above which hydrates + enters app
   };
 
   const handleSwitchUser = () => {
     setActiveUserId(null);
     setActiveUser(null);
+    // Clear cached progress for clean slate display
+    const uid = activeUser?.id;
+    if (uid) localStorage.removeItem(getProgressKey(uid));
+    setAppState('select');
   };
 
-  if (!activeUser) {
+  if (appState === 'loading') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100dvh', gap: 14 }}>
+        <div className="spinner" />
+        <p style={{ color: 'var(--text-light)', fontSize: 14 }}>Cargando tu progreso…</p>
+      </div>
+    );
+  }
+
+  if (appState === 'select') {
     return <UserSelect onSelect={handleSelectUser} />;
   }
 
@@ -36,7 +73,7 @@ function App() {
     <HashRouter>
       <div className="app">
         <Routes>
-          <Route path="/" element={<Home activeUser={activeUser} onSwitchUser={handleSwitchUser} />} />
+          <Route path="/" element={<Home activeUser={activeUser!} onSwitchUser={handleSwitchUser} />} />
           <Route path="/vocabulary" element={<Vocabulary />} />
           <Route path="/conjugation" element={<Conjugation />} />
           <Route path="/challenge" element={<Challenge />} />
