@@ -1,10 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useProgress } from '../hooks/useProgress';
 import { vocabulary } from '../data/vocabulary';
 import SpeakButton from '../components/SpeakButton';
 import { badges } from '../data/badges';
+import { supabase } from '../lib/supabase';
+import { getActiveUserId } from '../hooks/useUsers';
+import Avatar from '../components/Avatar';
 import type { BadgeStats } from '../data/badges';
+
+interface LeaderEntry { id: string; name: string; words: number; days: number; }
+
 
 function buildCalendar(completedDays: { date: string }[]) {
   const today = new Date();
@@ -24,6 +30,27 @@ export default function ProgressPage() {
   const navigate = useNavigate();
   const { progress } = useProgress();
   const [selectedWord, setSelectedWord] = useState<typeof vocabulary[0] | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([]);
+  const currentUserId = getActiveUserId();
+
+  useEffect(() => {
+    async function loadLeaderboard() {
+      const { data: profiles } = await supabase.from('profiles').select('id, name, words_learned');
+      const { data: days } = await supabase.from('progress').select('user_id');
+      if (!profiles) return;
+      const dayCounts: Record<string, number> = {};
+      (days ?? []).forEach(d => { dayCounts[d.user_id] = (dayCounts[d.user_id] ?? 0) + 1; });
+      const entries: LeaderEntry[] = profiles.map(p => ({
+        id: p.id,
+        name: p.name,
+        words: (p.words_learned ?? []).length,
+        days: dayCounts[p.id] ?? 0,
+      }));
+      entries.sort((a, b) => b.words - a.words || b.days - a.days);
+      setLeaderboard(entries);
+    }
+    loadLeaderboard();
+  }, []);
 
   const learnedWords = vocabulary.filter(w => progress.wordsLearned.includes(w.id));
 
@@ -186,7 +213,14 @@ export default function ProgressPage() {
 
       {/* Words learned */}
       <div className="card">
-        <div className="card-title">Palabras aprendidas ({learnedWords.length}/200)</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div className="card-title">Palabras aprendidas ({learnedWords.length}/200)</div>
+          {learnedWords.length > 0 && (
+            <Link to="/flashcards" className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 13, marginTop: 0 }}>
+              Repasar
+            </Link>
+          )}
+        </div>
         <div className="progress-bar-track">
           <div className="progress-bar-fill" style={{ width: `${(learnedWords.length / 200) * 100}%` }} />
         </div>
@@ -208,6 +242,26 @@ export default function ProgressPage() {
           </p>
         )}
       </div>
+
+      {/* Leaderboard */}
+      {leaderboard.length > 1 && (
+        <div className="card">
+          <div className="card-title" style={{ marginBottom: 14 }}>Clasificación</div>
+          {leaderboard.map((entry, i) => (
+            <div key={entry.id} className={`leaderboard-row ${entry.id === currentUserId ? 'leaderboard-me' : ''}`}>
+              <div className="leaderboard-rank">{i + 1}</div>
+              <Avatar name={entry.name} size={34} fontSize={14} radius={10} />
+              <div className="leaderboard-info">
+                <div className="leaderboard-name">{entry.name}</div>
+                <div className="leaderboard-stats">{entry.words} palabras · {entry.days} días</div>
+              </div>
+              {i === 0 && <div className="leaderboard-crown">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M2 20h20v2H2v-2zM4 17l4-8 6 4 4-8 4 8H4z"/></svg>
+              </div>}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Download */}
       <div className="download-recap-section">

@@ -7,6 +7,7 @@ import Challenge from './pages/Challenge';
 import Dialogues from './pages/Dialogues';
 import ProgressPage from './pages/Progress';
 import Exercise from './pages/Exercise';
+import Flashcards from './pages/Flashcards';
 import UserSelect from './pages/UserSelect';
 import { getActiveUserId, setActiveUserId, getProgressKey } from './hooks/useUsers';
 import { loadProgressFromSupabase } from './hooks/useProgress';
@@ -80,6 +81,7 @@ function App() {
           <Route path="/dialogues" element={<Dialogues />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/exercise" element={<Exercise />} />
+          <Route path="/flashcards" element={<Flashcards />} />
         </Routes>
       </div>
       <nav className="nav">

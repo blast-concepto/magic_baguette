@@ -1537,3 +1537,102 @@ body {
   background: #fee2e2;
   color: #991b1b;
 }
+
+/* ── Flashcards ─────────────────────────────────────────── */
+.flashcard-scene {
+  perspective: 900px;
+  width: 100%;
+  height: 280px;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+.flashcard {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+.flashcard-front,
+.flashcard-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.flashcard-front {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+.flashcard-back {
+  background: var(--gradient-soft);
+  border: 1.5px solid rgba(99,102,241,0.18);
+  box-shadow: var(--shadow-md);
+  transform: rotateY(180deg);
+}
+.flashcard-actions {
+  display: flex;
+  gap: 12px;
+}
+.flashcard-btn-review {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  font-weight: 700;
+}
+.flashcard-btn-review:hover { background: #fecaca; }
+.flashcard-btn-knew {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #d1fae5;
+  color: #065f46;
+  border: none;
+  font-weight: 700;
+}
+.flashcard-btn-knew:hover { background: #a7f3d0; }
+
+/* ── Leaderboard ────────────────────────────────────────── */
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.leaderboard-row:last-child { border-bottom: none; }
+.leaderboard-me {
+  background: var(--gradient-soft);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 0 -12px;
+  border-bottom: none !important;
+}
+.leaderboard-rank {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-light);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.leaderboard-info { flex: 1; }
+.leaderboard-name { font-size: 15px; font-weight: 700; }
+.leaderboard-stats { font-size: 12px; color: var(--text-light); margin-top: 1px; }
+.leaderboard-crown { color: #f59e0b; flex-shrink: 0; }
