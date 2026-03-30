@@ -151,6 +151,9 @@ export default function Vocabulary() {
           <button className="btn btn-primary" onClick={() => { markWordLearned(todayWord.id); startQuiz(); }}>
             Empezar quiz (5 preguntas)
           </button>
+          <button className="btn btn-outline" onClick={() => navigate('/flashcards')}>
+            Repasar
+          </button>
         </>
       )}
 
@@ -162,18 +165,30 @@ export default function Vocabulary() {
               <span className={`card-badge ${score > 0 ? 'badge-done' : 'badge-todo'}`}>
                 {score}/{currentQ + (answered ? 1 : 0)}
               </span>
-              <button
-                className={`toggle-btn ${listenMode ? 'on' : ''}`}
-                style={{ width: 36, height: 20 }}
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: listenMode ? 'var(--primary)' : 'var(--text-light)', cursor: 'pointer' }}
                 onClick={() => {
                   const next = !listenMode;
                   setListenMode(next);
                   if (next) speak(questions[currentQ].word.french);
                 }}
-                aria-label="Modo escucha"
+                title="Modo escucha: escucha la palabra en francés y elige la traducción"
               >
-                <div className="toggle-thumb" style={{ width: 14, height: 14 }} />
-              </button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 010 7.07"/>
+                  <path d="M19.07 4.93a10 10 0 010 14.14"/>
+                </svg>
+                <span>Escucha</span>
+                <button
+                  className={`toggle-btn ${listenMode ? 'on' : ''}`}
+                  style={{ width: 36, height: 20 }}
+                  onClick={e => e.stopPropagation()}
+                  aria-label="Modo escucha"
+                >
+                  <div className="toggle-thumb" style={{ width: 14, height: 14 }} />
+                </button>
+              </div>
             </div>
           </div>
 
