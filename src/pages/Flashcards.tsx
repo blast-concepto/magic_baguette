@@ -9,7 +9,7 @@ const SRS_KEY = 'mb-srs';
 
 interface SrsEntry { wordId: number; score: number; lastSeen: string; }
 
-type QuizMode = 'fr-es' | 'es-fr' | 'listen' | 'context';
+type QuizMode = 'fr-es' | 'es-fr' | 'listen' | 'context' | 'image';
 
 interface QuizCard {
   word: typeof vocabulary[0];
@@ -47,14 +47,16 @@ function pickMode(word: typeof vocabulary[0]): QuizMode {
 
   const r = Math.random();
   if (canContext) {
-    if (r < 0.30) return 'fr-es';
-    if (r < 0.60) return 'es-fr';
-    if (r < 0.80) return 'listen';
-    return 'context';
+    if (r < 0.25) return 'fr-es';
+    if (r < 0.50) return 'es-fr';
+    if (r < 0.65) return 'listen';
+    if (r < 0.80) return 'context';
+    return 'image';
   }
-  if (r < 0.40) return 'fr-es';
-  if (r < 0.70) return 'es-fr';
-  return 'listen';
+  if (r < 0.30) return 'fr-es';
+  if (r < 0.55) return 'es-fr';
+  if (r < 0.75) return 'listen';
+  return 'image';
 }
 
 function buildCard(word: typeof vocabulary[0]): QuizCard {
@@ -66,7 +68,7 @@ function buildCard(word: typeof vocabulary[0]): QuizCard {
     const options = shuffle([word.french, ...wrongs]);
     return { word, mode, options, correctIndex: options.indexOf(word.french) };
   }
-  if (mode === 'context') {
+  if (mode === 'context' || mode === 'image') {
     const wrongs = others.slice(0, 3).map(w => w.french);
     const options = shuffle([word.french, ...wrongs]);
     return { word, mode, options, correctIndex: options.indexOf(word.french) };
@@ -82,6 +84,7 @@ const MODE_LABELS: Record<QuizMode, string> = {
   'es-fr': 'Español → Francés',
   'listen': 'Escucha',
   'context': 'En contexto',
+  'image': 'Imagen',
 };
 
 const MODE_COLORS: Record<QuizMode, string> = {
@@ -89,6 +92,7 @@ const MODE_COLORS: Record<QuizMode, string> = {
   'es-fr': '#10b981',
   'listen': '#f59e0b',
   'context': '#8b5cf6',
+  'image': '#ec4899',
 };
 
 export default function Flashcards() {
@@ -302,6 +306,21 @@ export default function Flashcards() {
             </div>
             {ex0 && <div style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 8 }}>{ex0.english}</div>}
             <div style={{ fontSize: 13, color: 'var(--text-light)' }}>¿Qué palabra falta?</div>
+          </div>
+        )}
+
+        {mode === 'image' && (
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <img
+              src={`https://loremflickr.com/320/200/${encodeURIComponent(word.french)},france/all`}
+              alt={word.french}
+              style={{ width: '100%', maxWidth: 320, height: 180, objectFit: 'cover', borderRadius: 12, marginBottom: 12, display: 'block', margin: '0 auto 12px' }}
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            {answered && (
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)', marginBottom: 4 }}>{word.french}</div>
+            )}
+            <div style={{ fontSize: 13, color: 'var(--text-light)' }}>¿Qué palabra corresponde a esta imagen?</div>
           </div>
         )}
 
