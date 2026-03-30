@@ -311,16 +311,36 @@ export default function Flashcards() {
 
         {mode === 'image' && (
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <img
-              src={`https://loremflickr.com/320/200/${encodeURIComponent(word.french)},france/all`}
-              alt={word.french}
-              style={{ width: '100%', maxWidth: 320, height: 180, objectFit: 'cover', borderRadius: 12, marginBottom: 12, display: 'block', margin: '0 auto 12px' }}
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-            {answered && (
-              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)', marginBottom: 4 }}>{word.french}</div>
-            )}
-            <div style={{ fontSize: 13, color: 'var(--text-light)' }}>¿Qué palabra corresponde a esta imagen?</div>
+            <div style={{ position: 'relative', display: 'inline-block', width: '100%', maxWidth: 320, margin: '0 auto 14px' }}>
+              <img
+                src={`https://loremflickr.com/320/200/${encodeURIComponent(word.english)}/all`}
+                alt={word.english}
+                style={{ width: '100%', height: 180, objectFit: 'cover', borderRadius: 12, display: 'block' }}
+                onError={e => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                  const fallback = img.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+              {/* fallback shown if image fails */}
+              <div style={{ display: 'none', width: '100%', height: 180, borderRadius: 12, background: 'var(--border-light)', alignItems: 'center', justifyContent: 'center', fontSize: 48 }}>
+                🖼️
+              </div>
+              {answered && (
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
+                  borderRadius: '0 0 12px 12px',
+                  padding: '20px 12px 10px',
+                  color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em',
+                }}>
+                  {word.french}
+                  <div style={{ fontSize: 13, fontWeight: 500, opacity: 0.85 }}>{word.english}</div>
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light)' }}>¿Qué palabra francesa corresponde a esta imagen?</div>
           </div>
         )}
 
